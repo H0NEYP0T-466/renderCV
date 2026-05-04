@@ -1,0 +1,33 @@
+.field {
+  margin-bottom: 12px;
+}
+
+.field__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.field__input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.field__input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.field__input--textarea {
+  resize: vertical;
+  min-height: 60px;
+}

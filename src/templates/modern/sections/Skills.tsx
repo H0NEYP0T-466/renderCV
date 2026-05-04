@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './section-shared.css';
 
 interface SkillGroup {
   category: string;
@@ -13,21 +14,19 @@ export function Skills({ skills }: SkillsProps) {
   const validGroups = skills.filter((g) => g.category && g.items.length > 0);
   if (!validGroups.length) return null;
   const accent = modernConfig.accentColor;
+  const fs = modernConfig.fontSize;
 
   return (
-    <div className="mb-4">
-      <h2
-        className="font-bold uppercase tracking-wider mb-2 pb-1 border-b-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, borderColor: accent }}
-      >
+    <div className="resume-section">
+      <h2 className="resume-section__title" style={{ fontSize: fs.section, color: accent, borderColor: accent }}>
         Skills
       </h2>
       {validGroups.map((group, i) => (
-        <div key={i} className="mb-1.5">
-          <span className="font-semibold text-gray-800" style={{ fontSize: modernConfig.fontSize.body }}>
+        <div key={i} className="resume-skill-row">
+          <span className="resume-skill-category" style={{ fontSize: fs.body, color: '#1f2937' }}>
             {group.category}:{' '}
           </span>
-          <span className="text-gray-600" style={{ fontSize: modernConfig.fontSize.body }}>
+          <span className="resume-skill-items" style={{ fontSize: fs.body, color: '#4b5563' }}>
             {group.items.join(', ')}
           </span>
         </div>

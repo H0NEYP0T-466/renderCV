@@ -5,6 +5,7 @@ import { PreviewPanel } from './components/preview/PreviewPanel';
 import { ExportButton } from './components/export/ExportButton';
 import { exampleResume } from './data/exampleResume';
 import { FileText, Edit3, Upload, Download, Trash2, Eye } from 'lucide-react';
+import './App.css';
 
 function AppContent() {
   const { loadResume, resetResume, exportJSON, importJSON } = useResume();
@@ -55,98 +56,57 @@ function AppContent() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 shadow-sm z-10">
-        <div className="flex items-center gap-3">
-          <FileText size={24} className="text-blue-600" />
-          <h1 className="text-lg font-bold text-gray-900 hidden sm:block">renderCV</h1>
+    <div className="app-layout">
+      <header className="app-header">
+        <div className="header-left">
+          <FileText size={24} className="header-logo" />
+          <h1 className="header-title">renderCV</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleLoadExample}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
-            title="Load example resume"
-          >
+        <div className="header-actions">
+          <button onClick={handleLoadExample} className="header-btn" title="Load example resume">
             <Upload size={14} />
-            <span className="hidden md:inline">Load Example</span>
+            <span className="header-btn__label">Load Example</span>
           </button>
-          <button
-            onClick={handleExportJSON}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
-            title="Export as JSON"
-          >
+          <button onClick={handleExportJSON} className="header-btn" title="Export as JSON">
             <Download size={14} />
-            <span className="hidden md:inline">Export JSON</span>
+            <span className="header-btn__label">Export JSON</span>
           </button>
-          <button
-            onClick={handleImportJSON}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
-            title="Import from JSON"
-          >
+          <button onClick={handleImportJSON} className="header-btn" title="Import from JSON">
             <Upload size={14} />
-            <span className="hidden md:inline">Import JSON</span>
+            <span className="header-btn__label">Import JSON</span>
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 px-3 py-2 rounded-md hover:bg-red-50 transition-colors"
-            title="Clear all data"
-          >
+          <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden-input" />
+          <button onClick={handleClear} className="header-btn header-btn--danger" title="Clear all data">
             <Trash2 size={14} />
-            <span className="hidden md:inline">Clear</span>
+            <span className="header-btn__label">Clear</span>
           </button>
-          <div className="w-px h-6 bg-gray-200 mx-1" />
+          <div className="header-divider" />
           <ExportButton />
         </div>
       </header>
 
-      {/* Mobile/Tablet Tab Bar */}
-      <div className="lg:hidden bg-white border-b border-gray-200 flex shrink-0">
+      <div className="tab-bar">
         <button
           onClick={() => setActiveTab('edit')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-            activeTab === 'edit'
-              ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`tab-btn ${activeTab === 'edit' ? 'tab-btn--active' : ''}`}
         >
           <Edit3 size={16} />
           Edit
         </button>
         <button
           onClick={() => setActiveTab('preview')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-            activeTab === 'preview'
-              ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`tab-btn ${activeTab === 'preview' ? 'tab-btn--active' : ''}`}
         >
           <Eye size={16} />
           Preview
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        <div
-          className={`${
-            activeTab === 'edit' ? 'flex' : 'hidden'
-          } lg:flex flex-col w-full lg:w-[45%] border-r border-gray-200 bg-gray-50`}
-        >
+      <div className="app-main">
+        <div className={`editor-pane ${activeTab !== 'edit' ? 'pane--hidden-mobile' : ''}`}>
           <EditorPanel />
         </div>
-        <div
-          className={`${
-            activeTab === 'preview' ? 'flex' : 'hidden'
-          } lg:flex flex-col w-full lg:w-[55%] bg-gray-200`}
-        >
+        <div className={`preview-pane ${activeTab !== 'preview' ? 'pane--hidden-mobile' : ''}`}>
           <PreviewPanel />
         </div>
       </div>

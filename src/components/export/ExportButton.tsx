@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer';
 import { Download } from 'lucide-react';
 import { useResume } from '../../context/ResumeContext';
 import { ResumeDocument } from '../../templates/modern/ResumeDocument';
+import './ExportButton.css';
 
 export function ExportButton() {
   const { state } = useResume();
@@ -27,13 +28,9 @@ export function ExportButton() {
   };
 
   return (
-    <button
-      onClick={handleExport}
-      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm"
-      aria-label="Export resume as PDF"
-    >
+    <button onClick={handleExport} className="export-btn" aria-label="Export resume as PDF">
       <Download size={16} />
-      <span className="hidden sm:inline">Export PDF</span>
+      <span className="export-btn__label">Export PDF</span>
     </button>
   );
 }

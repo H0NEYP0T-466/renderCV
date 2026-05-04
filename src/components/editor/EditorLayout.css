@@ -1,0 +1,11 @@
+.editor-layout {
+  height: 100%;
+  overflow-y: auto;
+  background: #f3f4f6;
+  padding: 16px;
+}
+
+.editor-layout__inner {
+  max-width: 672px;
+  margin: 0 auto;
+}

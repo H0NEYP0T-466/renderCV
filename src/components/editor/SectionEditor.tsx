@@ -2,6 +2,7 @@ import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import './SectionEditor.css';
 
 function SortableItem({ id, children }: { id: string; children: ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -12,16 +13,18 @@ function SortableItem({ id, children }: { id: string; children: ReactNode }) {
     opacity: isDragging ? 0.5 : 1,
   };
   return (
-    <div ref={setNodeRef} style={style} className="flex items-start gap-2 mb-3">
+    <div ref={setNodeRef} style={{ ...style, display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '12px' }}>
       <button
-        className="mt-2 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 touch-none"
+        style={{ marginTop: '8px', cursor: 'grab', color: '#d1d5db', touchAction: 'none', userSelect: 'none', background: 'none', border: 'none', padding: 0 }}
         {...attributes}
         {...listeners}
         aria-label="Drag to reorder"
+        onMouseOver={(e) => (e.currentTarget.style.color = '#6b7280')}
+        onMouseOut={(e) => (e.currentTarget.style.color = '#d1d5db')}
       >
         <GripVertical size={14} />
       </button>
-      <div className="flex-1">{children}</div>
+      <div style={{ flex: 1 }}>{children}</div>
     </div>
   );
 }
@@ -35,10 +38,10 @@ interface BulletEditorProps {
 
 export function BulletEditor({ bullets, onChange }: BulletEditorProps) {
   return (
-    <div className="space-y-1">
+    <div className="bullet-editor__list">
       {bullets.map((bullet, i) => (
-        <div key={i} className="flex items-center gap-1">
-          <span className="text-xs text-gray-400 w-4 shrink-0">•</span>
+        <div key={i} className="bullet-editor__row">
+          <span className="bullet-editor__bullet">•</span>
           <input
             type="text"
             value={bullet}
@@ -47,22 +50,19 @@ export function BulletEditor({ bullets, onChange }: BulletEditorProps) {
               next[i] = e.target.value;
               onChange(next);
             }}
-            className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="bullet-editor__input"
             placeholder="Achievement or responsibility"
           />
           <button
             onClick={() => onChange(bullets.filter((_, j) => j !== i))}
-            className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
+            className="bullet-editor__delete"
             aria-label="Remove bullet"
           >
             <Trash2 size={12} />
           </button>
         </div>
       ))}
-      <button
-        onClick={() => onChange([...bullets, ''])}
-        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 mt-1"
-      >
+      <button onClick={() => onChange([...bullets, ''])} className="bullet-editor__add">
         <Plus size={12} /> Add bullet
       </button>
     </div>
@@ -87,16 +87,13 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="tag-editor__tags">
         {tags.map((tag, i) => (
-          <span
-            key={i}
-            className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded-full"
-          >
+          <span key={i} className="tag-editor__tag">
             {tag}
             <button
               onClick={() => onChange(tags.filter((_, j) => j !== i))}
-              className="hover:text-red-500"
+              className="tag-editor__tag-remove"
               aria-label={`Remove ${tag}`}
             >
               ×
@@ -104,7 +101,7 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
           </span>
         ))}
       </div>
-      <div className="flex gap-1">
+      <div className="tag-editor__input-row">
         <input
           type="text"
           value={input}
@@ -116,12 +113,9 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
             }
           }}
           placeholder="Add tag and press Enter"
-          className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+          className="tag-editor__input"
         />
-        <button
-          onClick={addTag}
-          className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
-        >
+        <button onClick={addTag} className="tag-editor__add-btn">
           Add
         </button>
       </div>

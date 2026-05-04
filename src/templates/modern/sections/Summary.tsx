@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './section-shared.css';
 
 interface SummaryProps {
   summary: string;
@@ -7,16 +8,17 @@ interface SummaryProps {
 export function Summary({ summary }: SummaryProps) {
   if (!summary) return null;
   const accent = modernConfig.accentColor;
+  const fs = modernConfig.fontSize;
 
   return (
-    <div className="mb-4">
+    <div className="resume-section">
       <h2
-        className="font-bold uppercase tracking-wider mb-1.5 pb-1 border-b-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, borderColor: accent }}
+        className="resume-section__title"
+        style={{ fontSize: fs.section, color: accent, borderColor: accent }}
       >
         Summary
       </h2>
-      <p className="text-gray-700 leading-relaxed" style={{ fontSize: modernConfig.fontSize.body }}>
+      <p style={{ fontSize: fs.body, color: '#374151', lineHeight: 1.6 }}>
         {summary}
       </p>
     </div>

@@ -1,0 +1,53 @@
+.sortable-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sortable-section__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sortable-section__drag-handle {
+  cursor: grab;
+  color: #9ca3af;
+  transition: color 0.15s;
+  touch-action: none;
+  user-select: none;
+}
+
+.sortable-section__drag-handle:hover {
+  color: #4b5563;
+}
+
+.sortable-section__drag-handle:active {
+  cursor: grabbing;
+}
+
+.sortable-section__label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.sortable-section__toggle {
+  color: #9ca3af;
+  transition: color 0.15s;
+}
+
+.sortable-section__toggle:hover {
+  color: #4b5563;
+}
+
+.sortable-section__body {
+  padding: 12px;
+}

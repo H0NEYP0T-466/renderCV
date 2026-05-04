@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import './EditorLayout.css';
 
 interface EditorLayoutProps {
   children: ReactNode;
@@ -6,8 +7,8 @@ interface EditorLayoutProps {
 
 export function EditorLayout({ children }: EditorLayoutProps) {
   return (
-    <div className="h-full overflow-y-auto bg-gray-100 p-4">
-      <div className="max-w-2xl mx-auto">{children}</div>
+    <div className="editor-layout">
+      <div className="editor-layout__inner">{children}</div>
     </div>
   );
 }

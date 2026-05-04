@@ -1,0 +1,105 @@
+/* Shared resume section styles */
+.resume-section {
+  margin-bottom: 16px;
+}
+
+.resume-section__title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+}
+
+.resume-section__item {
+  margin-bottom: 12px;
+}
+
+.resume-section__item:last-child {
+  margin-bottom: 0;
+}
+
+.resume-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.resume-section__date {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.resume-section__location {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.resume-section__bullets {
+  list-style: disc;
+  list-style-position: outside;
+  margin-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.resume-section__role {
+  font-weight: 700;
+}
+
+.resume-section__company {
+  color: #4b5563;
+}
+
+.resume-section__degree {
+  font-weight: 700;
+}
+
+.resume-section__school {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.resume-section__desc {
+  margin-bottom: 4px;
+}
+
+.resume-section__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.resume-section__tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.resume-skill-row {
+  margin-bottom: 6px;
+}
+
+.resume-skill-category {
+  font-weight: 600;
+}
+
+.resume-skill-items {
+  color: #4b5563;
+}
+
+.resume-award-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}

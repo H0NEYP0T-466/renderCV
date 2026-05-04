@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import type { ResumeData, SectionId } from '../../types';
-import { modernConfig } from './config';
 import { Header } from './sections/Header';
 import { Summary } from './sections/Summary';
 import { Experience } from './sections/Experience';
@@ -9,23 +8,17 @@ import { Education } from './sections/Education';
 import { Projects } from './sections/Projects';
 import { Skills } from './sections/Skills';
 import { Awards } from './sections/Awards';
+import './Preview.css';
 
 function getSectionComponent(id: SectionId): ((props: { data: unknown }) => ReactElement | null) | null {
   switch (id) {
-    case 'summary':
-      return ({ data }) => <Summary summary={data as string} />;
-    case 'experience':
-      return ({ data }) => <Experience experience={data as ResumeData['experience']} />;
-    case 'education':
-      return ({ data }) => <Education education={data as ResumeData['education']} />;
-    case 'projects':
-      return ({ data }) => <Projects projects={data as ResumeData['projects']} />;
-    case 'skills':
-      return ({ data }) => <Skills skills={data as ResumeData['skills']} />;
-    case 'awards':
-      return ({ data }) => <Awards awards={data as ResumeData['awards']} />;
-    default:
-      return null;
+    case 'summary': return ({ data }) => <Summary summary={data as string} />;
+    case 'experience': return ({ data }) => <Experience experience={data as ResumeData['experience']} />;
+    case 'education': return ({ data }) => <Education education={data as ResumeData['education']} />;
+    case 'projects': return ({ data }) => <Projects projects={data as ResumeData['projects']} />;
+    case 'skills': return ({ data }) => <Skills skills={data as ResumeData['skills']} />;
+    case 'awards': return ({ data }) => <Awards awards={data as ResumeData['awards']} />;
+    default: return null;
   }
 }
 
@@ -39,17 +32,7 @@ export function ModernPreview() {
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
   return (
-    <div
-      className="bg-white shadow-lg mx-auto"
-      style={{
-        width: '210mm',
-        minHeight: '297mm',
-        padding: '16mm',
-        fontFamily: modernConfig.fontFamily,
-        transform: 'scale(0.55)',
-        transformOrigin: 'top center',
-      }}
-    >
+    <div className="preview-page">
       <Header header={data.header} />
       {sortedSections
         .filter((s) => s.enabled)

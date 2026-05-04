@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './section-shared.css';
 
 interface ProjectItem {
   id: string;
@@ -17,38 +18,30 @@ interface ProjectsProps {
 export function Projects({ projects }: ProjectsProps) {
   if (!projects.length) return null;
   const accent = modernConfig.accentColor;
+  const fs = modernConfig.fontSize;
 
   return (
-    <div className="mb-4">
-      <h2
-        className="font-bold uppercase tracking-wider mb-2 pb-1 border-b-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, borderColor: accent }}
-      >
+    <div className="resume-section">
+      <h2 className="resume-section__title" style={{ fontSize: fs.section, color: accent, borderColor: accent }}>
         Projects
       </h2>
       {projects.map((proj) => (
-        <div key={proj.id} className="mb-3 last:mb-0">
-          <div className="flex justify-between items-baseline flex-wrap gap-x-2">
-            <span className="font-bold text-gray-900" style={{ fontSize: modernConfig.fontSize.body + 1 }}>
+        <div key={proj.id} className="resume-section__item">
+          <div className="resume-section__header">
+            <span className="resume-section__role" style={{ fontSize: fs.body + 1, color: '#111827' }}>
               {proj.name}
-              {proj.link && (
-                <span className="font-normal text-gray-500"> ({proj.link})</span>
-              )}
+              {proj.link && <span style={{ fontWeight: 400, color: '#6b7280' }}> ({proj.link})</span>}
             </span>
-            <span className="text-gray-500 text-xs whitespace-nowrap">
-              {proj.startDate} – {proj.endDate}
-            </span>
+            <span className="resume-section__date">{proj.startDate} – {proj.endDate}</span>
           </div>
-          <p className="text-gray-700 mb-1" style={{ fontSize: modernConfig.fontSize.body }}>
-            {proj.description}
-          </p>
+          <p className="resume-section__desc" style={{ fontSize: fs.body, color: '#374151' }}>{proj.description}</p>
           {proj.techStack && proj.techStack.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="resume-section__tags">
               {proj.techStack.map((tech, i) => (
                 <span
                   key={i}
-                  className="text-xs px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: accent + '12', color: accent, fontSize: modernConfig.fontSize.body - 1.5 }}
+                  className="resume-section__tag"
+                  style={{ backgroundColor: accent + '12', color: accent, fontSize: fs.body - 1.5 }}
                 >
                   {tech}
                 </span>

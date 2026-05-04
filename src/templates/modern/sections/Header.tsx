@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './Header.css';
 
 interface HeaderData {
   name: string;
@@ -21,33 +22,27 @@ export function Header({ header }: HeaderProps) {
   const contactParts = [header.email, header.phone, header.location, header.linkedin, header.github, header.website].filter(Boolean);
 
   return (
-    <div className="mb-4">
-      <h1
-        className="font-bold mb-1"
-        style={{ fontSize: modernConfig.fontSize.header, color: '#1a1a1a', lineHeight: 1.1 }}
-      >
+    <div className="resume-header">
+      <h1 className="resume-header__name" style={{ fontSize: modernConfig.fontSize.header, color: '#1a1a1a' }}>
         {header.name || 'Your Name'}
       </h1>
-      <p
-        className="mb-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, fontWeight: 600 }}
-      >
+      <p className="resume-header__title" style={{ fontSize: modernConfig.fontSize.section, color: accent }}>
         {header.title || 'Job Title'}
       </p>
-      <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-gray-600 mb-2">
+      <div className="resume-header__contacts">
         {contactParts.map((part, i) => (
-          <span key={i} className="flex items-center gap-1">
-            {i > 0 && <span style={{ color: accent }}>◇</span>}
+          <span key={i} className="resume-header__contact">
+            {i > 0 && <span className="resume-header__diamond" style={{ color: accent }}>◇</span>}
             {part}
           </span>
         ))}
       </div>
       {header.availability.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="resume-header__availability">
           {header.availability.map((tag, i) => (
             <span
               key={i}
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              className="resume-header__tag"
               style={{ backgroundColor: accent + '18', color: accent }}
             >
               {tag}

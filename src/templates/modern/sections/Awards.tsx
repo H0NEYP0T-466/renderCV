@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './section-shared.css';
 
 interface AwardItem {
   id: string;
@@ -15,26 +16,23 @@ interface AwardsProps {
 export function Awards({ awards }: AwardsProps) {
   if (!awards.length) return null;
   const accent = modernConfig.accentColor;
+  const fs = modernConfig.fontSize;
 
   return (
-    <div className="mb-4">
-      <h2
-        className="font-bold uppercase tracking-wider mb-2 pb-1 border-b-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, borderColor: accent }}
-      >
+    <div className="resume-section">
+      <h2 className="resume-section__title" style={{ fontSize: fs.section, color: accent, borderColor: accent }}>
         Awards
       </h2>
       {awards.map((award) => (
-        <div key={award.id} className="mb-2 last:mb-0">
-          <div className="flex justify-between items-baseline flex-wrap gap-x-2">
-            <span className="font-bold text-gray-900" style={{ fontSize: modernConfig.fontSize.body + 1 }}>
+        <div key={award.id} className="resume-section__item" style={{ marginBottom: 8 }}>
+          <div className="resume-award-header">
+            <span className="resume-section__role" style={{ fontSize: fs.body + 1, color: '#111827' }}>
               {award.title}
             </span>
-            <span className="text-gray-500 text-xs whitespace-nowrap">{award.date}</span>
+            <span className="resume-section__date">{award.date}</span>
           </div>
-          <p className="text-gray-600 text-xs">
-            {award.issuer}
-            {award.description && ` — ${award.description}`}
+          <p className="resume-section__location">
+            {award.issuer}{award.description && ` — ${award.description}`}
           </p>
         </div>
       ))}

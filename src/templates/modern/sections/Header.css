@@ -1,0 +1,46 @@
+.resume-header {
+  margin-bottom: 16px;
+}
+
+.resume-header__name {
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.resume-header__title {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.resume-header__contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 8px;
+}
+
+.resume-header__contact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resume-header__diamond {
+  margin: 0 4px;
+}
+
+.resume-header__availability {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resume-header__tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 500;
+}

@@ -1,4 +1,5 @@
 import { modernConfig } from '../config';
+import './section-shared.css';
 
 interface EducationItem {
   id: string;
@@ -17,28 +18,23 @@ interface EducationProps {
 export function Education({ education }: EducationProps) {
   if (!education.length) return null;
   const accent = modernConfig.accentColor;
+  const fs = modernConfig.fontSize;
 
   return (
-    <div className="mb-4">
-      <h2
-        className="font-bold uppercase tracking-wider mb-2 pb-1 border-b-2"
-        style={{ fontSize: modernConfig.fontSize.section, color: accent, borderColor: accent }}
-      >
+    <div className="resume-section">
+      <h2 className="resume-section__title" style={{ fontSize: fs.section, color: accent, borderColor: accent }}>
         Education
       </h2>
       {education.map((edu) => (
-        <div key={edu.id} className="mb-2 last:mb-0">
-          <div className="flex justify-between items-baseline flex-wrap gap-x-2">
-            <span className="font-bold text-gray-900" style={{ fontSize: modernConfig.fontSize.body + 1 }}>
+        <div key={edu.id} className="resume-section__item" style={{ marginBottom: 8 }}>
+          <div className="resume-section__header">
+            <span className="resume-section__degree" style={{ fontSize: fs.body + 1, color: '#111827' }}>
               {edu.degree}
             </span>
-            <span className="text-gray-500 text-xs whitespace-nowrap">
-              {edu.startDate} – {edu.endDate}
-            </span>
+            <span className="resume-section__date">{edu.startDate} – {edu.endDate}</span>
           </div>
-          <p className="text-gray-600 text-xs">
-            {edu.school}{edu.location ? ` — ${edu.location}` : ''}
-            {edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
+          <p className="resume-section__school">
+            {edu.school}{edu.location ? ` — ${edu.location}` : ''}{edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
           </p>
         </div>
       ))}

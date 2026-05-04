@@ -1,4 +1,5 @@
 import { type ChangeEvent } from 'react';
+import './Field.css';
 
 interface FieldProps {
   label: string;
@@ -23,19 +24,16 @@ export function Field({
     onChange(e.target.value);
   };
 
-  const inputClasses =
-    'w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow';
-
   return (
-    <div className="mb-3">
-      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+    <div className="field">
+      <label className="field__label">{label}</label>
       {textarea ? (
         <textarea
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
           rows={rows}
-          className={inputClasses + ' resize-y'}
+          className="field__input field__input--textarea"
         />
       ) : (
         <input
@@ -43,7 +41,7 @@ export function Field({
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
-          className={inputClasses}
+          className="field__input"
         />
       )}
     </div>

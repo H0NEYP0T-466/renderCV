@@ -14,7 +14,9 @@ const styles = StyleSheet.create({
     fontFamily: modernConfig.fontFamily,
     fontSize: modernConfig.fontSize.body,
     color: '#333',
-    padding: 40,
+    paddingTop: 40,
+    paddingBottom: 40,
+    paddingHorizontal: 40,
     lineHeight: 1.4,
   },
   headerName: {
@@ -32,6 +34,7 @@ const styles = StyleSheet.create({
   contactRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    width: '100%',
     fontSize: modernConfig.fontSize.body - 1,
     color: '#666',
     marginBottom: 4,
@@ -44,6 +47,7 @@ const styles = StyleSheet.create({
   availabilityRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    width: '100%',
     gap: 4,
     marginBottom: 8,
   },
@@ -70,15 +74,18 @@ const styles = StyleSheet.create({
     fontSize: modernConfig.fontSize.body,
     color: '#555',
     lineHeight: 1.5,
+    marginBottom: 4,
   },
   expItem: {
     marginBottom: 8,
+    width: '100%',
   },
   expHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
     flexWrap: 'wrap',
+    width: '100%',
   },
   expRole: {
     fontSize: modernConfig.fontSize.body + 1,
@@ -100,15 +107,18 @@ const styles = StyleSheet.create({
   bulletItem: {
     fontSize: modernConfig.fontSize.body - 1,
     color: '#555',
-    marginLeft: 8,
+    paddingLeft: 8,
     marginBottom: 1,
+    width: '100%',
   },
   eduItem: {
     marginBottom: 6,
+    width: '100%',
   },
   eduHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
   },
   eduDegree: {
     fontSize: modernConfig.fontSize.body + 1,
@@ -117,10 +127,12 @@ const styles = StyleSheet.create({
   },
   projItem: {
     marginBottom: 8,
+    width: '100%',
   },
   projHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
   },
   projName: {
     fontSize: modernConfig.fontSize.body + 1,
@@ -144,6 +156,7 @@ const styles = StyleSheet.create({
   },
   skillsRow: {
     flexDirection: 'row',
+    width: '100%',
     marginBottom: 3,
     flexWrap: 'wrap',
   },
@@ -156,10 +169,12 @@ const styles = StyleSheet.create({
   },
   awardItem: {
     marginBottom: 5,
+    width: '100%',
   },
   awardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
   },
   awardTitle: {
     fontSize: modernConfig.fontSize.body + 1,
@@ -181,7 +196,7 @@ export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" orientation="portrait" style={styles.page} wrap>
         {/* Header */}
         <Text style={styles.headerName}>{data.header.name}</Text>
         <Text style={styles.headerTitle}>{data.header.title}</Text>

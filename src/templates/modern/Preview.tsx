@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import type { ResumeData, SectionId } from '../../types';
 import { Header } from './sections/Header';
@@ -10,25 +10,33 @@ import { Skills } from './sections/Skills';
 import { Awards } from './sections/Awards';
 import './Preview.css';
 
-// Unscaled A4 usable content height.
-// A4 = 297mm tall. Page padding is 16mm top + 16mm bottom.
-// Usable height = 265mm = 265 * (96 / 25.4) ≈ 998px.
+/*
+ * A4 usable content height (CSS px at 96 DPI):
+ *   A4 = 297mm tall, minus 16mm top + 16mm bottom padding = 265mm usable
+ *   265mm * (96 / 25.4) ≈ 998px
+ * Sections are summed against this budget; the header occupies part of page 0.
+ */
 const PAGE_PX = (297 - 32) * (96 / 25.4);
 
-function getSectionComponent(id: SectionId): ((props: { data: unknown }) => ReactElement | null) | null {
+function getSectionComponent(
+  id: SectionId
+): ((props: { data: unknown }) => ReactElement | null) | null {
   switch (id) {
-    case 'summary': return ({ data }) => <Summary summary={data as string} />;
-    case 'experience': return ({ data }) => <Experience experience={data as ResumeData['experience']} />;
-    case 'education': return ({ data }) => <Education education={data as ResumeData['education']} />;
-    case 'projects': return ({ data }) => <Projects projects={data as ResumeData['projects']} />;
-    case 'skills': return ({ data }) => <Skills skills={data as ResumeData['skills']} />;
-    case 'awards': return ({ data }) => <Awards awards={data as ResumeData['awards']} />;
-    default: return null;
+    case 'summary':
+      return ({ data }) => <Summary summary={data as string} />;
+    case 'experience':
+      return ({ data }) => <Experience experience={data as ResumeData['experience']} />;
+    case 'education':
+      return ({ data }) => <Education education={data as ResumeData['education']} />;
+    case 'projects':
+      return ({ data }) => <Projects projects={data as ResumeData['projects']} />;
+    case 'skills':
+      return ({ data }) => <Skills skills={data as ResumeData['skills']} />;
+    case 'awards':
+      return ({ data }) => <Awards awards={data as ResumeData['awards']} />;
+    default:
+      return null;
   }
-}
-
-function getDataKey(id: SectionId): keyof ResumeData {
-  return id as keyof ResumeData;
 }
 
 interface SectionNode {
@@ -36,9 +44,8 @@ interface SectionNode {
   data: unknown;
 }
 
-interface MeasuredSection {
-  node: SectionNode;
-  height: number;
+function getDataKey(id: SectionId): keyof ResumeData {
+  return id as keyof ResumeData;
 }
 
 export function ModernPreview() {
@@ -48,68 +55,96 @@ export function ModernPreview() {
     () => [...sections].sort((a, b) => a.order - b.order).filter((s) => s.enabled),
     [sections]
   );
+
   const measureRef = useRef<HTMLDivElement>(null);
-  const [pageRanges, setPageRanges] = useState<{ start: number; end: number }[] | null>(null);
+  const [pages, setPages] = useState<number[][] | null>(null);
 
   const nodes: SectionNode[] = [];
   for (const section of sortedSections) {
-    const dataKey = getDataKey(section.id);
-    const sectionData = data[dataKey];
+    const sectionData = data[getDataKey(section.id)];
     if (!sectionData) continue;
     if (section.id === 'summary' && !(sectionData as string)?.trim()) continue;
     if (Array.isArray(sectionData) && sectionData.length === 0) continue;
     nodes.push({ id: section.id, data: sectionData });
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const host = measureRef.current;
     if (!host) return;
-    // Wait one more frame so layout has settled after React commit.
-    const raf = requestAnimationFrame(() => {
-      const kids = Array.from(host.children) as HTMLElement[];
-      // children[0] = header, children[1..] = sections
-      const headerH = kids[0]?.getBoundingClientRect().height ?? 0;
-      const measured: MeasuredSection[] = nodes.map((node, idx) => ({
-        node,
-        height: (kids[idx + 1]?.getBoundingClientRect().height) ?? 0,
-      }));
 
-      const ranges: { start: number; end: number }[] = [];
-      let rangeStart = 0;
+    let cancelled = false;
+
+    const measure = () => {
+      if (cancelled || !host) return;
+      const kids = Array.from(host.children) as HTMLElement[];
+      if (kids.length === 0) return;
+
+      const headerH = kids[0].getBoundingClientRect().height ?? 0;
+      const heights: number[] = [];
+      for (let i = 1; i < kids.length; i++) {
+        heights.push(kids[i].getBoundingClientRect().height ?? 0);
+      }
+
+      const ranges: number[][] = [];
+      let currentPage: number[] = [];
       let used = headerH;
 
-      for (let i = 0; i < measured.length; i++) {
-        const h = measured[i].height;
+      for (let i = 0; i < heights.length; i++) {
+        const h = heights[i];
         if (h === 0) continue;
-        if (used + h > PAGE_PX && i > rangeStart) {
-          // Break BEFORE this section — current page holds sections [rangeStart, i)
-          ranges.push({ start: rangeStart, end: i });
-          rangeStart = i;
+        if (used + h > PAGE_PX && currentPage.length > 0) {
+          ranges.push(currentPage);
+          currentPage = [i];
           used = h;
         } else {
+          currentPage.push(i);
           used += h;
         }
       }
-      if (rangeStart < measured.length) {
-        ranges.push({ start: rangeStart, end: measured.length });
-      }
-      setPageRanges(ranges);
+      if (currentPage.length > 0) ranges.push(currentPage);
+      if (ranges.length === 0) ranges.push([]);
+
+      setPages(ranges);
+    };
+
+    // Double-RAF: waits for the browser to flush layout of the measurement
+    // surface — one RAF fires too early in some browsers.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(measure);
     });
-    return () => cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      cancelled = true;
+    };
   }, [data, sortedSections.length, nodes.length]);
 
-  function renderSection(node: SectionNode) {
+  function renderSection(node: SectionNode): ReactElement | null {
     const Component = getSectionComponent(node.id);
     if (!Component) return null;
     return <Component key={node.id} data={node.data} />;
   }
 
-  // If measurement hasn't populated yet, render only the offscreen measure block
-  // so the user never sees an intermediate broken state.
-  if (!pageRanges) {
+  // Measurement phase — render offscreen, hidden, so layout produces real boxes.
+  // We never commit this to the visible tree (aria-hidden + visibility:hidden).
+  if (!pages) {
     return (
-      <div ref={measureRef} data-preview-measure="" aria-hidden="true">
+      <div
+        ref={measureRef}
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          left: '-10000px',
+          top: 0,
+          width: '210mm',
+          padding: '16mm',
+          boxSizing: 'border-box',
+          fontFamily: 'Helvetica, Arial, sans-serif',
+          fontSize: '10pt',
+          lineHeight: 1.4,
+          visibility: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
         <Header header={data.header} />
         {nodes.map(renderSection)}
       </div>
@@ -118,10 +153,12 @@ export function ModernPreview() {
 
   return (
     <div className="preview-pages">
-      {pageRanges.map((range, pageIdx) => (
-        <div className="preview-page" key={pageIdx}>
-          {pageIdx === 0 && <Header header={data.header} />}
-          {nodes.slice(range.start, range.end).map(renderSection)}
+      {pages.map((pageIdxArr, pageIdx) => (
+        <div className="preview-page-sizer" key={pageIdx}>
+          <div className="preview-page">
+            {pageIdx === 0 && <Header header={data.header} />}
+            {pageIdxArr.map((nodeIdx) => renderSection(nodes[nodeIdx]))}
+          </div>
         </div>
       ))}
     </div>

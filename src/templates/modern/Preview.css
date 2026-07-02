@@ -2,34 +2,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
   padding-bottom: 24px;
 }
 
-[data-preview-measure] {
-  position: absolute;
-  left: -10000px;
-  top: 0;
-  width: 210mm;
-  padding: 16mm;
-  box-sizing: border-box;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 10pt;
-  line-height: 1.4;
-  visibility: hidden;
-  pointer-events: none;
+/*
+ * Each `.preview-page` is scaled 0.55 (163mm visual height from a 297mm CSS box).
+ * If we let the 297mm box take layout space, neighbouring pages end up ~134mm apart.
+ * The sizer below sets the layout box to the *post-transform* footprint so pages
+ * sit a few px apart — close to a single rule line.
+ */
+.preview-page-sizer {
+  width: calc(210mm * 0.55);
+  height: calc(297mm * 0.55);
+  margin-bottom: 4px;
+  overflow: hidden;
 }
 
 .preview-page {
   background: #fff;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
   width: 210mm;
-  min-height: 297mm;
   height: 297mm;
-  max-height: 297mm;
   padding: 16mm;
   font-family: Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.4;
   transform: scale(0.55);
-  transform-origin: top center;
+  transform-origin: top left;
   overflow: hidden;
 }

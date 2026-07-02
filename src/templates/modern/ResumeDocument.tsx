@@ -19,26 +19,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     lineHeight: 1.4,
   },
-  headerName: {
-    fontSize: modernConfig.fontSize.header,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 2,
+  // Header — we space items with explicit spacer Views since `marginBottom`
+  // on <Text> is unreliable inside react-pdf's Yoga layout.
+  spacerSm: {
+    height: 4,
   },
-  headerTitle: {
-    fontSize: modernConfig.fontSize.section,
-    color: accent,
-    fontWeight: 'bold',
-    marginBottom: 6,
+  spacerMd: {
+    height: 8,
   },
-  contactRow: {
+  spacerLg: {
+    height: 10,
+  },
+  contactWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '100%',
     fontSize: modernConfig.fontSize.body - 1,
     color: '#666',
-    marginBottom: 4,
-    gap: 4,
+    lineHeight: 1.6,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   diamond: {
     color: accent,
@@ -49,7 +51,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     width: '100%',
     gap: 4,
-    marginBottom: 8,
   },
   availabilityTag: {
     backgroundColor: accent + '20',
@@ -102,13 +103,11 @@ const styles = StyleSheet.create({
   expLocation: {
     fontSize: modernConfig.fontSize.body - 1,
     color: '#999',
-    marginBottom: 2,
   },
   bulletItem: {
     fontSize: modernConfig.fontSize.body - 1,
     color: '#555',
     paddingLeft: 8,
-    marginBottom: 1,
     width: '100%',
   },
   eduItem: {
@@ -183,9 +182,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
-  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
-  const contactParts = [
+function makeContactRow(data: ResumeData) {
+  const parts = [
     data.header.email,
     data.header.phone,
     data.header.location,
@@ -195,26 +193,38 @@ export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
   ].filter(Boolean);
 
   return (
-    <Document>
-      <Page size="A4" orientation="portrait" style={styles.page} wrap>
-        {/* Header */}
-        <Text style={styles.headerName}>{data.header.name}</Text>
-        <Text style={styles.headerTitle}>{data.header.title}</Text>
-        <View style={styles.contactRow}>
-          {contactParts.map((part, i) => (
-            <View key={i} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {i > 0 && <Text style={styles.diamond}>◇</Text>}
-              {part?.startsWith('http') || part?.includes('linkedin') || part?.includes('github') ? (
-                <Link src={`https://${part}`} style={{ color: '#666', textDecoration: 'none' }}>
-                  <Text>{part}</Text>
-                </Link>
-              ) : (
-                <Text>{part}</Text>
-              )}
-            </View>
-          ))}
+    <View style={styles.contactWrap} wrap>
+      {parts.map((part, i) => (
+        <View key={i} style={styles.contactItem}>
+          {i > 0 && <Text style={styles.diamond}>·</Text>}
+          {part?.startsWith('http') || part?.includes('linkedin') || part?.includes('github') ? (
+            <Link src={`https://${part}`} style={{ color: '#666', textDecoration: 'none' }}>
+              <Text>{part}</Text>
+            </Link>
+          ) : (
+            <Text>{part}</Text>
+          )}
         </View>
-        {data.header.availability.length > 0 && (
+      ))}
+    </View>
+  );
+}
+
+function headerContentJsx(data: ResumeData) {
+  return (
+    <>
+      <Text style={{ fontSize: modernConfig.fontSize.header, fontWeight: 'bold', color: '#1a1a1a' }}>
+        {data.header.name}
+      </Text>
+      <View style={styles.spacerSm} />
+      <Text style={{ fontSize: modernConfig.fontSize.section, color: accent, fontWeight: 'bold' }}>
+        {data.header.title}
+      </Text>
+      <View style={styles.spacerMd} />
+      {makeContactRow(data)}
+      {data.header.availability.length > 0 && (
+        <>
+          <View style={styles.spacerSm} />
           <View style={styles.availabilityRow}>
             {data.header.availability.map((tag: string, i: number) => (
               <Text key={i} style={styles.availabilityTag}>
@@ -222,136 +232,207 @@ export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
               </Text>
             ))}
           </View>
-        )}
+        </>
+      )}
+    </>
+  );
+}
 
-        {/* Dynamic sections */}
-        {sortedSections
-          .filter((s) => s.enabled)
-          .map((section) => {
-            if (section.id === 'summary' && data.summary) {
-              return (
-                <View key="summary">
-                  <Text style={styles.sectionTitle}>Summary</Text>
-                  <Text style={styles.summaryText}>{data.summary}</Text>
+export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
+  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+
+  // A4 usable height ≈ 842pt - 40 (paddingTop) - 40 (paddingBottom) = 762pt
+  // Threshold of 720 gives a tiny safety margin without wasting space.
+  const PAGE_LIMIT = 720;
+
+  type SectionJsx = {
+    id: string;
+    jsx: React.ReactNode;
+    estPt: number;
+  };
+
+  const sectionJsxList: SectionJsx[] = [];
+
+  for (const section of sortedSections) {
+    if (!section.enabled) continue;
+    let estPt = 40;
+    let jsx: React.ReactNode = null;
+
+    if (section.id === 'summary' && data.summary?.trim()) {
+      const lines = Math.max(1, Math.ceil(data.summary.length / 85));
+      estPt += lines * 15;
+      jsx = (
+        <View key="summary" wrap={false}>
+          <Text style={styles.sectionTitle}>Summary</Text>
+          <Text style={styles.summaryText}>{data.summary}</Text>
+        </View>
+      );
+    } else if (section.id === 'experience') {
+      const list = data.experience.filter((e) => e.company || e.role);
+      if (list.length > 0) {
+        for (const exp of list) {
+          estPt += 28 + exp.bullets.filter((b) => b.trim()).length * 14;
+        }
+        jsx = (
+          <View key="experience" wrap={false}>
+            <Text style={styles.sectionTitle}>Experience</Text>
+            {list.map((exp) => (
+              <View key={exp.id} style={styles.expItem} wrap={false}>
+                <View style={styles.expHeader}>
+                  <Text>
+                    <Text style={styles.expRole}>{exp.role}</Text>
+                    <Text style={styles.expCompany}> — {exp.company}</Text>
+                  </Text>
+                  <Text style={styles.expDate}>
+                    {exp.startDate} – {exp.endDate}
+                  </Text>
                 </View>
-              );
-            }
-            if (section.id === 'experience' && data.experience.length > 0) {
-              return (
-                <View key="experience">
-                  <Text style={styles.sectionTitle}>Experience</Text>
-                  {data.experience.map((exp: ResumeData['experience'][number]) => (
-                    <View key={exp.id} style={styles.expItem}>
-                      <View style={styles.expHeader}>
-                        <Text>
-                          <Text style={styles.expRole}>{exp.role}</Text>
-                          <Text style={styles.expCompany}> — {exp.company}</Text>
-                        </Text>
-                        <Text style={styles.expDate}>
-                          {exp.startDate} – {exp.endDate}
-                        </Text>
-                      </View>
-                      <Text style={styles.expLocation}>{exp.location}</Text>
-                      {exp.bullets
-                        .filter((b: string) => b.trim())
-                        .map((bullet: string, i: number) => (
-                          <Text key={i} style={styles.bulletItem}>
-                            • {bullet}
-                          </Text>
-                        ))}
-                    </View>
+                {exp.location ? <Text style={styles.expLocation}>{exp.location}</Text> : null}
+                {exp.bullets
+                  .filter((b) => b.trim())
+                  .map((bullet, i) => (
+                    <Text key={i} style={styles.bulletItem}>
+                      {'•'} {bullet}
+                    </Text>
+                  ))}
+              </View>
+            ))}
+          </View>
+        );
+      }
+    } else if (section.id === 'education') {
+      const list = data.education;
+      if (list.length > 0) {
+        for (const _ of list) estPt += 42;
+        jsx = (
+          <View key="education" wrap={false}>
+            <Text style={styles.sectionTitle}>Education</Text>
+            {list.map((edu) => (
+              <View key={edu.id} style={styles.eduItem} wrap={false}>
+                <View style={styles.eduHeader}>
+                  <Text style={styles.eduDegree}>{edu.degree}</Text>
+                  <Text style={styles.expDate}>
+                    {edu.startDate} – {edu.endDate}
+                  </Text>
+                </View>
+                <Text style={styles.expLocation}>
+                  {edu.school}{edu.location ? ` — ${edu.location}` : ''}
+                  {edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
+                </Text>
+              </View>
+            ))}
+          </View>
+        );
+      }
+    } else if (section.id === 'projects') {
+      const list = data.projects;
+      if (list.length > 0) {
+        for (const p of list) estPt += 30 + (p.techStack?.length ?? 0) * 12;
+        jsx = (
+          <View key="projects" wrap={false}>
+            <Text style={styles.sectionTitle}>Projects</Text>
+            {list.map((proj) => (
+              <View key={proj.id} style={styles.projItem} wrap={false}>
+                <View style={styles.projHeader}>
+                  <Text style={styles.projName}>
+                    {proj.name}
+                    {proj.link ? ` (${proj.link})` : ''}
+                  </Text>
+                  <Text style={styles.expDate}>
+                    {proj.startDate} – {proj.endDate}
+                  </Text>
+                </View>
+                <Text style={styles.projDesc}>{proj.description}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 2 }}>
+                  {proj.techStack?.map((tech, i) => (
+                    <Text key={i} style={styles.techTag}>
+                      {tech}
+                    </Text>
                   ))}
                 </View>
-              );
-            }
-            if (section.id === 'education' && data.education.length > 0) {
-              return (
-                <View key="education">
-                  <Text style={styles.sectionTitle}>Education</Text>
-                  {data.education.map((edu: ResumeData['education'][number]) => (
-                    <View key={edu.id} style={styles.eduItem}>
-                      <View style={styles.eduHeader}>
-                        <Text style={styles.eduDegree}>{edu.degree}</Text>
-                        <Text style={styles.expDate}>
-                          {edu.startDate} – {edu.endDate}
-                        </Text>
-                      </View>
-                      <Text style={styles.expLocation}>
-                        {edu.school}{edu.location ? ` — ${edu.location}` : ''}
-                        {edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
-                      </Text>
-                    </View>
-                  ))}
+              </View>
+            ))}
+          </View>
+        );
+      }
+    } else if (section.id === 'skills') {
+      const validGroups = data.skills.filter((g) => g.category && g.items.length > 0);
+      if (validGroups.length > 0) {
+        for (const _ of validGroups) estPt += 22;
+        jsx = (
+          <View key="skills" wrap={false}>
+            <Text style={styles.sectionTitle}>Skills</Text>
+            {validGroups.map((group, i) => (
+              <View key={i} style={styles.skillsRow} wrap={false}>
+                <Text style={styles.skillCategory}>{group.category}: </Text>
+                <Text style={styles.skillItems}>{group.items.join(', ')}</Text>
+              </View>
+            ))}
+          </View>
+        );
+      }
+    } else if (section.id === 'awards') {
+      const list = data.awards;
+      if (list.length > 0) {
+        for (const _ of list) estPt += 40;
+        jsx = (
+          <View key="awards" wrap={false}>
+            <Text style={styles.sectionTitle}>Awards</Text>
+            {list.map((award) => (
+              <View key={award.id} style={styles.awardItem} wrap={false}>
+                <View style={styles.awardHeader}>
+                  <Text style={styles.awardTitle}>{award.title}</Text>
+                  <Text style={styles.expDate}>{award.date}</Text>
                 </View>
-              );
-            }
-            if (section.id === 'projects' && data.projects.length > 0) {
-              return (
-                <View key="projects">
-                  <Text style={styles.sectionTitle}>Projects</Text>
-                  {data.projects.map((proj: ResumeData['projects'][number]) => (
-                    <View key={proj.id} style={styles.projItem}>
-                      <View style={styles.projHeader}>
-                        <Text style={styles.projName}>
-                          {proj.name}
-                          {proj.link ? ` (${proj.link})` : ''}
-                        </Text>
-                        <Text style={styles.expDate}>
-                          {proj.startDate} – {proj.endDate}
-                        </Text>
-                      </View>
-                      <Text style={styles.projDesc}>{proj.description}</Text>
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 2 }}>
-                        {proj.techStack?.map((tech: string, i: number) => (
-                          <Text key={i} style={styles.techTag}>
-                            {tech}
-                          </Text>
-                        ))}
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              );
-            }
-            if (section.id === 'skills' && data.skills.length > 0) {
-              const validGroups = data.skills.filter(
-                (g: ResumeData['skills'][number]) => g.category && g.items.length > 0
-              );
-              if (validGroups.length === 0) return null;
-              return (
-                <View key="skills">
-                  <Text style={styles.sectionTitle}>Skills</Text>
-                  {validGroups.map((group: ResumeData['skills'][number], i: number) => (
-                    <View key={i} style={styles.skillsRow}>
-                      <Text style={styles.skillCategory}>{group.category}: </Text>
-                      <Text style={styles.skillItems}>{group.items.join(', ')}</Text>
-                    </View>
-                  ))}
-                </View>
-              );
-            }
-            if (section.id === 'awards' && data.awards.length > 0) {
-              return (
-                <View key="awards">
-                  <Text style={styles.sectionTitle}>Awards</Text>
-                  {data.awards.map((award: ResumeData['awards'][number]) => (
-                    <View key={award.id} style={styles.awardItem}>
-                      <View style={styles.awardHeader}>
-                        <Text style={styles.awardTitle}>{award.title}</Text>
-                        <Text style={styles.expDate}>{award.date}</Text>
-                      </View>
-                      <Text style={styles.expLocation}>
-                        {award.issuer}
-                        {award.description ? ` — ${award.description}` : ''}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              );
-            }
-            return null;
-          })}
-      </Page>
+                <Text style={styles.expLocation}>
+                  {award.issuer}
+                  {award.description ? ` — ${award.description}` : ''}
+                </Text>
+              </View>
+            ))}
+          </View>
+        );
+      }
+    }
+
+    if (jsx) sectionJsxList.push({ id: section.id, jsx, estPt });
+  }
+
+  // Rough header height estimate (name + title + contact + optional tags).
+  const headerPt = data.header.availability.length > 0 ? 110 : 95;
+
+  const pages: React.ReactNode[][] = [];
+  let currentPage: React.ReactNode[] = [];
+  let currentPt = -1;
+
+  for (let i = 0; i < sectionJsxList.length; i++) {
+    const { jsx, estPt } = sectionJsxList[i];
+    if (currentPt === -1) {
+      // Starting fresh page.
+      currentPage = i === 0 ? [headerContentJsx(data), jsx] : [jsx];
+      currentPt = (i === 0 ? headerPt : 0) + estPt;
+    } else if (currentPt + estPt > PAGE_LIMIT && currentPage.length > 0) {
+      // Won't fit — flush and start new page.
+      pages.push(currentPage);
+      currentPage = [jsx];
+      currentPt = estPt;
+    } else {
+      currentPage.push(jsx);
+      currentPt += estPt;
+    }
+  }
+  if (currentPage.length > 0) pages.push(currentPage);
+
+  // Edge case: no sections enabled → still emit one page with header.
+  if (pages.length === 0) pages.push([headerContentJsx(data)]);
+
+  return (
+    <Document>
+      {pages.map((views, idx) => (
+        <Page key={idx} size="A4" orientation="portrait" style={styles.page}>
+          {views}
+        </Page>
+      ))}
     </Document>
   );
 }

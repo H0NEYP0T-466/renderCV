@@ -1,0 +1,48 @@
+name: Feature request
+description: "Propose a new enhancement or idea for renderCV."
+labels: ["enhancement"]
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea? Tell us what problem it solves and how you'd like it to work.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you facing that this feature would solve?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe how you'd like this feature to work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or features you've considered.
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in scope and out of scope for this feature?
+      placeholder: |
+        In scope:
+        - ...
+        Out of scope:
+        - ...
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: Trade-offs, performance concerns, or backward-compatibility issues.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, links to prior art, etc.

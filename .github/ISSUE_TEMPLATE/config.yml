@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Start a Discussion
+    url: https://github.com/H0NEYP0T-466/renderCV/discussions/new?category=q-a
+    about: For questions, help, or open-ended conversation.
+  - name: Report a Vulnerability
+    url: https://github.com/H0NEYP0T-466/renderCV/security/advisories/new
+    about: Report security vulnerabilities privately — see SECURITY.md.

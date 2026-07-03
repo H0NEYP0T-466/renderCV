@@ -10,12 +10,6 @@ import { Skills } from './sections/Skills';
 import { Awards } from './sections/Awards';
 import './Preview.css';
 
-/*
- * A4 usable content height (CSS px at 96 DPI):
- *   A4 = 297mm tall, minus 16mm top + 16mm bottom padding = 265mm usable
- *   265mm * (96 / 25.4) ≈ 998px
- * Sections are summed against this budget; the header occupies part of page 0.
- */
 const PAGE_PX = (297 - 32) * (96 / 25.4);
 
 function getSectionComponent(
@@ -59,14 +53,19 @@ export function ModernPreview() {
   const measureRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<number[][] | null>(null);
 
-  const nodes: SectionNode[] = [];
-  for (const section of sortedSections) {
-    const sectionData = data[getDataKey(section.id)];
-    if (!sectionData) continue;
-    if (section.id === 'summary' && !(sectionData as string)?.trim()) continue;
-    if (Array.isArray(sectionData) && sectionData.length === 0) continue;
-    nodes.push({ id: section.id, data: sectionData });
-  }
+  const dataKey = useMemo(() => JSON.stringify(data), [data]);
+
+  const nodes: SectionNode[] = useMemo(() => {
+    const result: SectionNode[] = [];
+    for (const section of sortedSections) {
+      const sectionData = data[getDataKey(section.id)];
+      if (!sectionData) continue;
+      if (section.id === 'summary' && !(sectionData as string)?.trim()) continue;
+      if (Array.isArray(sectionData) && sectionData.length === 0) continue;
+      result.push({ id: section.id, data: sectionData });
+    }
+    return result;
+  }, [data, sortedSections]);
 
   useEffect(() => {
     const host = measureRef.current;
@@ -77,7 +76,10 @@ export function ModernPreview() {
     const measure = () => {
       if (cancelled || !host) return;
       const kids = Array.from(host.children) as HTMLElement[];
-      if (kids.length === 0) return;
+      if (kids.length === 0) {
+        setPages([[]]);
+        return;
+      }
 
       const headerH = kids[0].getBoundingClientRect().height ?? 0;
       const heights: number[] = [];
@@ -107,8 +109,6 @@ export function ModernPreview() {
       setPages(ranges);
     };
 
-    // Double-RAF: waits for the browser to flush layout of the measurement
-    // surface — one RAF fires too early in some browsers.
     requestAnimationFrame(() => {
       requestAnimationFrame(measure);
     });
@@ -116,7 +116,7 @@ export function ModernPreview() {
     return () => {
       cancelled = true;
     };
-  }, [data, sortedSections.length, nodes.length]);
+  }, [dataKey, nodes]);
 
   function renderSection(node: SectionNode): ReactElement | null {
     const Component = getSectionComponent(node.id);
@@ -124,50 +124,34 @@ export function ModernPreview() {
     return <Component key={node.id} data={node.data} />;
   }
 
-  // Measurement phase — render offscreen, hidden, so layout produces real boxes.
-  // We never commit this to the visible tree (aria-hidden + visibility:hidden).
-  if (!pages) {
-    return (
+  return (
+    <div className="preview-pages">
       <div
         ref={measureRef}
+        className="preview-measure"
         aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '-10000px',
-          top: 0,
-          width: '210mm',
-          padding: '16mm',
-          boxSizing: 'border-box',
-          fontFamily: 'Helvetica, Arial, sans-serif',
-          fontSize: '10pt',
-          lineHeight: 1.4,
-          visibility: 'hidden',
-          pointerEvents: 'none',
-        }}
       >
         <Header header={data.header} />
         {nodes.map(renderSection)}
       </div>
-    );
-  }
 
-  return (
-    <div className="preview-pages">
-      {pages.map((pageIdxArr, pageIdx) => (
-        <Fragment key={pageIdx}>
-          <div className="preview-page-sizer">
-            <div className="preview-page">
-              {pageIdx === 0 && <Header header={data.header} />}
-              {pageIdxArr.map((nodeIdx) => renderSection(nodes[nodeIdx]))}
+      {pages &&
+        pages.map((pageIdxArr, pageIdx) => (
+          <Fragment key={pageIdx}>
+            <div className="preview-page-sizer">
+              <div className="preview-page">
+                {pageIdx === 0 && <Header header={data.header} />}
+                {pageIdxArr.map((nodeIdx) => renderSection(nodes[nodeIdx]))}
+              </div>
             </div>
-          </div>
-          {pageIdx < pages.length - 1 && (
-            <div className="preview-page-break">
-              <span>Page {pageIdx + 1} end — continues on page {pageIdx + 2}</span>
-            </div>
-          )}
-        </Fragment>
-      ))}
+            {pageIdx < pages.length - 1 && (
+              <div className="preview-page-break">
+                <span>Page {pageIdx + 1} end — continues on page {pageIdx + 2}</span>
+              </div>
+            )}
+          </Fragment>
+        ))
+      }
     </div>
   );
 }

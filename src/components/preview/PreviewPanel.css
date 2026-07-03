@@ -2,7 +2,4 @@
   height: 100%;
   overflow-y: auto;
   background: #e5e7eb;
-  display: flex;
-  justify-content: center;
-  padding: 24px 0;
 }

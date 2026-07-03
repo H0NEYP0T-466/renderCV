@@ -20,8 +20,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     lineHeight: 1.4,
   },
-  // Header — explicit spacer Views (<View height={N}/>) are required between
-  // bare Text siblings; Yoga ignores marginBottom on Text inside a flex column.
   headerBlock: {
     marginBottom: 6,
   },
@@ -76,9 +74,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     borderBottom: `1.5 solid ${accent}`,
-    paddingBottom: 3,
-    marginBottom: 8,
-    marginTop: 12,
+    paddingBottom: 2,
+    marginBottom: 4,
+    marginTop: 6,
   },
   summaryText: {
     fontSize: modernConfig.fontSize.body,
@@ -87,7 +85,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   expItem: {
-    marginBottom: 8,
+    marginBottom: 4,
     width: '100%',
   },
   expHeader: {
@@ -134,7 +132,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   projItem: {
-    marginBottom: 8,
+    marginBottom: 4,
     width: '100%',
   },
   projHeader: {
@@ -385,7 +383,6 @@ function renderSection(node: SectionNode): React.ReactNode {
 }
 
 export function ResumeDocument({ data, sections }: ResumeDocumentProps) {
-  // Same page-splitting algorithm used by ModernPreview so preview & PDF paginate identically.
   const pages = splitIntoPages(data, sections);
 
   return (

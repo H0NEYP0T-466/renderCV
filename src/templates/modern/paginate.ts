@@ -5,58 +5,57 @@ export interface SectionNode {
   data: unknown;
 }
 
-// Content budget inside one A4 page (excluding top+bottom padding).
-// Shared by DOM preview (converted to px) and PDF export (kept in pt).
-// We work in pt everywhere internally; Preview.tsx multiplies by 72/96 when
-// comparing against DOM measurements.
-// A4 = 842.9pt tall. With page padding (28pt top + 28pt bottom = 56pt) and a
-// small safety margin to avoid float-overflow we land on 750pt usable height.
-export const PAGE_LIMIT_PT = 750;
+// A4 = 842.9pt. Page padding = 28+28 = 56pt. Usable = 786.9pt.
+export const PAGE_LIMIT_PT = 780;
 
 function getDataKey(id: SectionId): keyof ResumeData {
   return id as keyof ResumeData;
 }
+
+// marginTop(6) + text(~17pt) + paddingBottom(2) + marginBottom(4) = 29pt
+const SECTION_TITLE_PT = 29;
 
 function sectionEstimatePt(id: SectionId, data: unknown): number {
   switch (id) {
     case 'summary': {
       const text = (data as string)?.trim() ?? '';
       if (!text) return 0;
-      const lines = Math.max(1, Math.ceil(text.length / 85));
-      // section title (~30pt) + each text line (~15pt)
-      return 30 + lines * 15;
+      const lines = Math.max(1, Math.ceil(text.length / 70));
+      return SECTION_TITLE_PT + lines * 15;
     }
     case 'experience': {
       const list = (data as ResumeData['experience']).filter((e) => e.company || e.role);
-      let total = 0;
-      for (const exp of list) {
-        // role line ~20pt + date/location ~14pt + bullets ~14pt each
-        total += 20 + exp.bullets.filter((b) => b.trim()).length * 14;
+      if (list.length === 0) return 0;
+      let total = SECTION_TITLE_PT;
+      for (let i = 0; i < list.length; i++) {
+        const bulletCount = list[i].bullets.filter((b) => b.trim()).length;
+        // header(15) + location(13) + bullets(12 each) + marginBottom(4)
+        total += 15 + 13 + bulletCount * 12 + 4;
       }
+      total -= 4;
       return total;
     }
     case 'education': {
-      const list = (data as ResumeData['education']);
-      // degree line + school/location ~44pt per entry
-      return list.length * 44;
+      const list = data as ResumeData['education'];
+      if (list.length === 0) return 0;
+      return SECTION_TITLE_PT + list.length * 28 - 4;
     }
     case 'projects': {
-      const list = (data as ResumeData['projects']);
-      let total = 0;
-      for (const p of list) total += 30 + (p.techStack?.length ?? 0) * 12;
-      return total;
+      const list = data as ResumeData['projects'];
+      if (list.length === 0) return 0;
+      return SECTION_TITLE_PT + list.length * 43 - 4;
     }
     case 'skills': {
       const validGroups = (data as ResumeData['skills']).filter(
-        (g) => g.category && g.items.length > 0
+        (g: { category: string; items: string[] }) => g.category && g.items.length > 0
       );
-      // category category row ~22pt each
-      return validGroups.length * 22;
+      if (validGroups.length === 0) return 0;
+      return SECTION_TITLE_PT + validGroups.length * 15 - 2;
     }
     case 'awards': {
-      const list = (data as ResumeData['awards']);
-      // title line + issuer line ~44pt each
-      return list.length * 44;
+      const list = data as ResumeData['awards'];
+      if (list.length === 0) return 0;
+      return SECTION_TITLE_PT + list.length * 28 - 3;
     }
     default:
       return 0;
@@ -64,21 +63,10 @@ function sectionEstimatePt(id: SectionId, data: unknown): number {
 }
 
 export function headerEstimatePt(header: ResumeData['header']): number {
-  // Page top padding (28pt) + name (~24pt font = ~30pt box) +
-  // spacers between name/title/contacts (~18pt total) +
-  // title (~12pt font = ~16pt box) + contacts row (~14pt) +
-  // header block-to-section gap (~6pt).
-  // Availability tags (~18pt) are NOT pre-paid — they live on page 0 as
-  // additional content, only added to the estimate when present.
-  const base = 28 + 30 + 18 + 16 + 14 + 6;
-  return header.availability.length > 0 ? base + 18 : base;
+  const base = 28 + 34 + 12 + 17 + 6 + 14 + 6;
+  return header.availability.length > 0 ? base + 6 + 18 : base;
 }
 
-/**
- * Split resume sections into pages using the same logic for both DOM preview
- * and PDF export. Returns an array of page-content arrays; the header is
- * rendered on page 0 by the consumer (not included here).
- */
 export function splitIntoPages(data: ResumeData, sections: SectionConfig[]): SectionNode[][] {
   const sortedSections = [...sections]
     .sort((a, b) => a.order - b.order)

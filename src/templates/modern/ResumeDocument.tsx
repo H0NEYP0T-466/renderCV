@@ -36,9 +36,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   spacer4: { height: 4 },
-  spacer6: { height: 6 },
-  spacer8: { height: 8 },
-  spacer10: { height: 10 },
+  spacer6: { height: 6, width: '100%' },
+  spacer8: { height: 8, width: '100%' },
+  spacer10: { height: 12, width: '100%' },
   contactWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -223,7 +223,7 @@ function renderHeader(data: ResumeData) {
   return (
     <View style={styles.headerBlock} wrap={false}>
       <Text style={styles.headerName}>{data.header.name}</Text>
-      <View style={styles.spacer6} />
+      <View style={styles.spacer10} />
       <Text style={styles.headerTitle}>{data.header.title}</Text>
       <View style={styles.spacer6} />
       {makeContactRow(data)}

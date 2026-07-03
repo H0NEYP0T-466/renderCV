@@ -32,3 +32,25 @@
   transform-origin: top left;
   overflow: hidden;
 }
+
+/* Page break indicator between multi-page previews */
+.preview-page-break {
+  width: calc(210mm * 0.55);
+  margin: 8px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-page-break::before,
+.preview-page-break::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed #999;
+}
+
+.preview-page-break span {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import type { ResumeData, SectionId } from '../../types';
 import { Header } from './sections/Header';
@@ -154,12 +154,19 @@ export function ModernPreview() {
   return (
     <div className="preview-pages">
       {pages.map((pageIdxArr, pageIdx) => (
-        <div className="preview-page-sizer" key={pageIdx}>
-          <div className="preview-page">
-            {pageIdx === 0 && <Header header={data.header} />}
-            {pageIdxArr.map((nodeIdx) => renderSection(nodes[nodeIdx]))}
+        <Fragment key={pageIdx}>
+          <div className="preview-page-sizer">
+            <div className="preview-page">
+              {pageIdx === 0 && <Header header={data.header} />}
+              {pageIdxArr.map((nodeIdx) => renderSection(nodes[nodeIdx]))}
+            </div>
           </div>
-        </div>
+          {pageIdx < pages.length - 1 && (
+            <div className="preview-page-break">
+              <span>Page {pageIdx + 1} end — continues on page {pageIdx + 2}</span>
+            </div>
+          )}
+        </Fragment>
       ))}
     </div>
   );
